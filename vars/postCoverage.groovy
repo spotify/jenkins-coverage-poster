@@ -1,4 +1,4 @@
-def call(coverage, threshold=70) {
+def call(coverage, Integer threshold=70) {
   withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'github-user-token',
                     usernameVariable: 'NOT_USED', passwordVariable: 'TOKEN']]) {
     if(coverage == "") {
