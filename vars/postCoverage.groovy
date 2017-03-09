@@ -17,9 +17,9 @@ def call(coverage, Integer threshold=70) {
         REPO=${ORG_REPO_BRANCH_ARRAY[1]}
         TOKEN_PARAM="access_token=$TOKEN"
         SHA=$(git rev-parse HEAD)
-        COMMIT_STATUS_URL=$(echo "${GITHUB_API_URL}/repos/${ORG}/${REPO}/statuses/${SHA}")
+        COMMIT_STATUS_URL=$(echo "https://${GITHUB_API_URL}/repos/${ORG}/${REPO}/statuses/${SHA}")
 
-        curl -sS -X POST "${COMMIT_STATUS_URL}?${TOKEN_PARAM}" -d '{
+        curl -isSL -X POST "${COMMIT_STATUS_URL}?${TOKEN_PARAM}" -d '{
           "state": "'${STATE}'",
           "target_url": "'${BUILD_URL}'",
           "context": "continuous-integration/jenkins/code-coverage",
