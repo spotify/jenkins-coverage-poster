@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 package com.mpavlov.jenkinsfile
 
-def getCoverageFromJacoco(String htmlPath="target/site/jacoco/index.html") {
+def getCoverageFromJacoco(String htmlPath) {
   if(!fileExists(htmlPath)) {
     echo "[WARNING] Jacoco coverage report not found at ${htmlPath}"
     return null
