@@ -1,3 +1,3 @@
-def call(String htmlPath="target/site/jacoco/index.html", Integer threshold=70) {
-  postCoverage(getCoverageFromJacoco(htmlPath))
+def call(Integer threshold, String htmlPath="target/site/jacoco/index.html") {
+  postCoverage(getCoverageFromJacoco(htmlPath), threshold)
 }
