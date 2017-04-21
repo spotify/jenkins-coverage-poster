@@ -5,16 +5,18 @@ A Jenkins Pipeline library for posting code coverage results.
 Currently only supports jacoco html.
 
 ## Example usage
-In your Jenkinsfile:
+Adding this to your Jenkinsfile:
 ```
 @Library('github.com/mpavlov/test-jenkins-lib') _
 
 stage("Post coverage") {
-  postJacocoCoverage(threshold: 85)
+  postJacocoCoverage(threshold: 75)
 }
-
-
 ```
+
+... gives you this in your Pull Request:
+
+<img src="./coverage_pass.png" width="700" />
 
 ## Code of conduct
 This project adheres to the [Open Code of Conduct][code-of-conduct]. By participating, you are expected to honor this code.
