@@ -1,3 +1,5 @@
+![](https://img.shields.io/badge/release-alpha-yellow.svg)
+
 A Jenkins Pipeline library for posting code coverage results.
 
 Currently only supports jacoco html.
