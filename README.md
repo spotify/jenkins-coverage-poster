@@ -10,11 +10,12 @@ Currently supports:
    * github enterprise
 
 ## Example usage
+In your Jenkinsfile:
 ```
 @Library('github.com/mpavlov/test-jenkins-lib') _
 
 stage("Run tests") {
-    sh "mvn test"
+  sh "mvn test"
 }
 
 stage("Post coverage") {
