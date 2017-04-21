@@ -10,20 +10,23 @@ Currently supports:
    * github enterprise
 
 ## Example usage
-Adding this to your Jenkinsfile:
 ```
 @Library('github.com/mpavlov/test-jenkins-lib') _
+
+stage("Run tests") {
+    sh "mvn test"
+}
 
 stage("Post coverage") {
   postJacocoCoverage(threshold: 75)
 }
 ```
 
-... gives you this in your Pull Request:
+## Example result
 
 <img src="./coverage_pass.png" width="700" />
 
-### Requirements
+## Requirements
 
 Your Jenkins must be version 2.0 or later and must define a Credential called `github-user-token`, which contains as password a valid GitHub api token. The Credential username can be anything, as it is not used. The token's permissions must allow read access to repositories and posting comments to pull requests at minimum.
 
