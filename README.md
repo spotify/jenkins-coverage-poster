@@ -1,2 +1,3 @@
-# test-jenkins-lib
-a jenkins pipeline library test
+A Jenkins Pipeline library for posting code coverage results.
+
+Currently only supports jacoco html.
