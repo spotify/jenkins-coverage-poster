@@ -1,5 +1,5 @@
 #!/usr/bin/env groovy
-package com.mpavlov.jenkinsfile
+package com.spotify.jenkinsfile
 
 def getCoverageFromJacoco(String htmlPath) {
   if(!fileExists(htmlPath)) {

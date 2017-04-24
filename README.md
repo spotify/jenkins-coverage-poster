@@ -12,7 +12,7 @@ Currently supports:
 ## Example usage
 In your Jenkinsfile:
 ```
-@Library('github.com/mpavlov/test-jenkins-lib') _
+@Library('github.com/spotify/jenkins-coverage-poster.git') _
 
 stage("Run tests") {
   sh "mvn test"
