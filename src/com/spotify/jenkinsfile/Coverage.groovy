@@ -19,7 +19,7 @@ def getCoverageFromJacoco(String htmlPath) {
 def postCoverage(Integer coverage, Integer threshold) {
   withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'github-user-token',
                     usernameVariable: 'NOT_USED', passwordVariable: 'TOKEN']]) {
-    if(coverage == "") {
+    if(coverage == null || coverage == "") {
       echo "[WARNING] No coverage to post"
       return
     }
