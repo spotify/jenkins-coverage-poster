@@ -22,6 +22,12 @@ for counter in root.findall("counter"):
         coverage = covered / (missed + covered)
         print "%.2f" % (coverage * 100)\'
     ''')
+
+    if(coverage == "") {
+      echo "[WARNING] Unable to parse Jacoco coverage report at ${xmlPath}"
+      return null
+    }
+
     return coverage as Double
   }
 }
