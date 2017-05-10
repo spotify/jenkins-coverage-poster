@@ -1,22 +1,32 @@
 #!/usr/bin/env groovy
 package com.spotify.jenkinsfile
 
-def getCoverageFromJacoco(String htmlPath) {
-  if(!fileExists(htmlPath)) {
-    echo "[WARNING] Jacoco coverage report not found at ${htmlPath}"
+def getCoverageFromJacoco(String xmlPath) {
+  if(!fileExists(xmlPath)) {
+    echo "[WARNING] Jacoco coverage report not found at ${xmlPath}"
     return null
   }
 
   // can't use String.replaceAll() with groups: https://issues.jenkins-ci.org/browse/JENKINS-26481
-  withEnv(["HTML_PATH=${htmlPath}"]) {
+  withEnv(["XML_PATH=${xmlPath}"]) {
     final coverage = sh(returnStdout: true, script: '''#!/bin/bash -xe
-      perl -pe "s|.*<td>Total</td>.*?>([0-9]+%)</td>.*|\\1|" "${HTML_PATH}"
+      cat ${XML_PATH} | python -c 'import sys
+import xml.etree.ElementTree as ET
+
+tree = ET.parse(sys.stdin)
+root = tree.getroot()
+for counter in root.findall("counter"):
+    if counter.attrib["type"] == "INSTRUCTION":
+        missed = float(counter.attrib["missed"])
+        covered = float(counter.attrib["covered"])
+        coverage = covered / (missed + covered)
+        print "%.2f" % (coverage * 100)\'
     ''')
-    return coverage.replaceAll(/\%$/, "") as Integer
+    return coverage as Double
   }
 }
 
-def postCoverage(Integer coverage, Integer threshold) {
+def postCoverage(Double coverage, Integer threshold) {
   withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'github-user-token',
                     usernameVariable: 'NOT_USED', passwordVariable: 'TOKEN']]) {
     if(coverage == null || coverage == "") {
