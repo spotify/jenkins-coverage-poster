@@ -39,7 +39,7 @@ def postCoverage(Double coverage, Double threshold) {
   }
 
   final state = (coverage >= threshold) ? "success" : "failure"
-  final context = "continuous-integration/jenkins/code-coverage"
+  final context = "code-coverage"
   final description = "${coverage}% (threshold: ${threshold}%)"
   postCommitStatus(state, context, description)
 }
@@ -51,7 +51,7 @@ def postCoverageDelta(Double coverageDelta, Double threshold) {
   }
 
   final state = (coverageDelta <= threshold) ? "success" : "failure"
-  final context = "continuous-integration/jenkins/code-coverage-delta"
+  final context = "code-coverage-delta"
   final description = "${coverageDelta}% (threshold: ${threshold}%)"
   postCommitStatus(state, context, description)
 }
