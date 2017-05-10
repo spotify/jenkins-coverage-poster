@@ -44,15 +44,17 @@ def postCoverage(Double coverage, Double threshold) {
   postCommitStatus(state, context, description)
 }
 
+@NonCPS
 def postCoverageDelta(Double coverageDelta, Double threshold) {
   if(coverageDelta == null || coverageDelta == "") {
     echo "[WARNING] No coverage diff to post"
     return
   }
 
-  final state = (coverageDelta <= threshold) ? "success" : "failure"
+  final maybePlus = (coverageDelta > 0) ? "+" : ""
+  final state = (coverageDelta >= threshold) ? "success" : "failure"
   final context = "code-coverage-delta"
-  final description = "${coverageDelta}% (threshold: ${threshold}%)"
+  final description = "${maybePlus}${coverageDelta}% (threshold: ${threshold}%)"
   postCommitStatus(state, context, description)
 }
 
