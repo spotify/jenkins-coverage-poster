@@ -26,18 +26,36 @@ for counter in root.findall("counter"):
   }
 }
 
-def postCoverage(Double coverage, Integer threshold) {
+def postCoverage(Double coverage, Double threshold) {
+  if(coverage == null || coverage == "") {
+    echo "[WARNING] No coverage to post"
+    return
+  }
+
+  final state = (coverage >= threshold) ? "success" : "failure"
+  final context = "continuous-integration/jenkins/code-coverage"
+  final description = "'${coverage}'% (threshold: '${threshold}'%)"
+  postCommitStatus(state, context, description)
+}
+
+def postCoverageDelta(Double coverageDelta, Double threshold) {
+  if(coverageDelta == null || coverageDelta == "") {
+    echo "[WARNING] No coverage diff to post"
+    return
+  }
+
+  final state = (coverageDelta <= threshold) ? "success" : "failure"
+  final context = "continuous-integration/jenkins/code-coverage-delta"
+  final description = "'${coverageDelta}'% (threshold: '${threshold}'%)"
+  postCommitStatus(state, context, description)
+}
+
+def postCommitStatus(String state, String context, String description) {
   withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'github-user-token',
                     usernameVariable: 'NOT_USED', passwordVariable: 'TOKEN']]) {
-    if(coverage == null || coverage == "") {
-      echo "[WARNING] No coverage to post"
-      return
-    }
-
-    final state = (coverage >= threshold) ? "success" : "failure"
     final commitHash = getCommitHash()
 
-    withEnv(["COVERAGE=${coverage}", "THRESHOLD=${threshold}", "STATE=${state}", "COMMIT_HASH=${commitHash}"]) {
+    withEnv(["STATE=${state}", "CONTEXT=${context}", "DESCRIPTION=${description}", "COMMIT_HASH=${commitHash}"]) {
       sh '''#!/bin/bash -xe
         GITHUB_HOST=$(git config remote.origin.url | cut -d/ -f3)
         GITHUB_API_URL=$([[ "${GITHUB_HOST}" == "github.com" ]] && echo "api.github.com" || echo "${GITHUB_HOST}/api/v3")
@@ -50,8 +68,8 @@ def postCoverage(Double coverage, Integer threshold) {
         curl -isSL -X POST "${COMMIT_STATUS_URL}?${TOKEN_PARAM}" -d '{
           "state": "'${STATE}'",
           "target_url": "'${BUILD_URL}'",
-          "context": "continuous-integration/jenkins/code-coverage",
-          "description": "'${COVERAGE}'% (threshold: '${THRESHOLD}'%)"
+          "context": "'${CONTEXT}'",
+          "description": "'${DESCRIPTION}'""
         }'
       '''
     }
