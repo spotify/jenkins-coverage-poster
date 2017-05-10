@@ -35,8 +35,9 @@ def postCoverage(Double coverage, Integer threshold) {
     }
 
     final state = (coverage >= threshold) ? "success" : "failure"
+    final commitHash = getCommitHash()
 
-    withEnv(["COVERAGE=${coverage}", "THRESHOLD=${threshold}", "STATE=${state}"]) {
+    withEnv(["COVERAGE=${coverage}", "THRESHOLD=${threshold}", "STATE=${state}", "COMMIT_HASH=${commitHash}"]) {
       sh '''#!/bin/bash -xe
         GITHUB_HOST=$(git config remote.origin.url | cut -d/ -f3)
         GITHUB_API_URL=$([[ "${GITHUB_HOST}" == "github.com" ]] && echo "api.github.com" || echo "${GITHUB_HOST}/api/v3")
@@ -44,8 +45,7 @@ def postCoverage(Double coverage, Integer threshold) {
         ORG=${ORG_REPO_BRANCH_ARRAY[0]}
         REPO=${ORG_REPO_BRANCH_ARRAY[1]}
         TOKEN_PARAM="access_token=$TOKEN"
-        SHA=$(git rev-parse HEAD)
-        COMMIT_STATUS_URL=$(echo "https://${GITHUB_API_URL}/repos/${ORG}/${REPO}/statuses/${SHA}")
+        COMMIT_STATUS_URL=$(echo "https://${GITHUB_API_URL}/repos/${ORG}/${REPO}/statuses/${COMMIT_HASH}")
 
         curl -isSL -X POST "${COMMIT_STATUS_URL}?${TOKEN_PARAM}" -d '{
           "state": "'${STATE}'",
@@ -57,3 +57,16 @@ def postCoverage(Double coverage, Integer threshold) {
     }
   }
 }
+
+def getCommitHash(String branch=null) {
+  if(branch == null || branch == "") {
+    branch = "HEAD"
+  }
+
+  withEnv(["BRANCH=${branch}"]) {
+    return sh(returnStdout: true, script: '''#!/bin/bash -xe
+      git rev-parse "$BRANCH"
+    ''')
+  }
+}
+
