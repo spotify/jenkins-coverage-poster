@@ -40,7 +40,7 @@ def postCoverage(Double coverage, Double threshold) {
 
   final state = (coverage >= threshold) ? "success" : "failure"
   final context = "continuous-integration/jenkins/code-coverage"
-  final description = "'${coverage}'% (threshold: '${threshold}'%)"
+  final description = "${coverage}% (threshold: ${threshold}%)"
   postCommitStatus(state, context, description)
 }
 
@@ -52,7 +52,7 @@ def postCoverageDelta(Double coverageDelta, Double threshold) {
 
   final state = (coverageDelta <= threshold) ? "success" : "failure"
   final context = "continuous-integration/jenkins/code-coverage-delta"
-  final description = "'${coverageDelta}'% (threshold: '${threshold}'%)"
+  final description = "${coverageDelta}% (threshold: ${threshold}%)"
   postCommitStatus(state, context, description)
 }
 
@@ -61,24 +61,24 @@ def postCommitStatus(String state, String context, String description) {
                     usernameVariable: 'NOT_USED', passwordVariable: 'TOKEN']]) {
     final commitHash = getCommitHash()
 
-    withEnv(["STATE=${state}", "CONTEXT=${context}", "DESCRIPTION=${description}", "COMMIT_HASH=${commitHash}"]) {
-      sh '''#!/bin/bash -xe
-        GITHUB_HOST=$(git config remote.origin.url | cut -d/ -f3)
-        GITHUB_API_URL=$([[ "${GITHUB_HOST}" == "github.com" ]] && echo "api.github.com" || echo "${GITHUB_HOST}/api/v3")
-        ORG_REPO_BRANCH_ARRAY=(${JOB_NAME//// })
-        ORG=${ORG_REPO_BRANCH_ARRAY[0]}
-        REPO=${ORG_REPO_BRANCH_ARRAY[1]}
-        TOKEN_PARAM="access_token=$TOKEN"
-        COMMIT_STATUS_URL=$(echo "https://${GITHUB_API_URL}/repos/${ORG}/${REPO}/statuses/${COMMIT_HASH}")
+    // yay, escaping! https://gist.github.com/Faheetah/e11bd0315c34ed32e681616e41279ef4
+    final script = """#!/bin/bash -xe
+      GITHUB_HOST=\$(git config remote.origin.url | cut -d/ -f3)
+      GITHUB_API_URL=\$([[ "\${GITHUB_HOST}" == "github.com" ]] && echo "api.github.com" || echo "\${GITHUB_HOST}/api/v3")
+      ORG_REPO_BRANCH_ARRAY=(\${JOB_NAME//// })
+      ORG=\${ORG_REPO_BRANCH_ARRAY[0]}
+      REPO=\${ORG_REPO_BRANCH_ARRAY[1]}
+      TOKEN_PARAM="access_token=\${TOKEN}"
+      COMMIT_STATUS_URL=\$(echo "https://\${GITHUB_API_URL}/repos/\${ORG}/\${REPO}/statuses/${commitHash}")
 
-        curl -isSL -X POST "${COMMIT_STATUS_URL}?${TOKEN_PARAM}" -d '{
-          "state": "'${STATE}'",
-          "target_url": "'${BUILD_URL}'",
-          "context": "'${CONTEXT}'",
-          "description": "'${DESCRIPTION}'""
-        }'
-      '''
-    }
+      curl -isSL -X POST "\${COMMIT_STATUS_URL}?\${TOKEN_PARAM}" -d '{
+        \"state\": \"${state}\",
+        \"target_url\": \"'\${BUILD_URL}'\",
+        \"context\": \"${context}\",
+        \"description\": \"${description}\"
+      }'
+    """
+    sh script
   }
 }
 

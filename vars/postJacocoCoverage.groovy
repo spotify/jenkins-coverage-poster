@@ -1,8 +1,8 @@
 def call(Map args) {
-  def threshold = args.threshold ?: 80
-  def xmlPath = args.xmlPath ?: "target/site/jacoco/jacoco.xml"
+  final Double threshold = args.threshold ?: 80.0
+  final String xmlPath = args.xmlPath ?: "target/site/jacoco/jacoco.xml"
 
-  def util = new com.spotify.jenkinsfile.Coverage()
-  def coverage = util.getCoverageFromJacoco(xmlPath)
+  final util = new com.spotify.jenkinsfile.Coverage()
+  final Double coverage = util.getCoverageFromJacoco(xmlPath)
   util.postCoverage(coverage, threshold)
 }
