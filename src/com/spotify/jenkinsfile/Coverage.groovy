@@ -48,7 +48,7 @@ def postCoverage(Integer coverage, Integer threshold) {
   }
 }
 
-def getCommitHash(String branch) {
+def getCommitHash(String branch=null) {
   if(branch == null || branch == "") {
     branch = "HEAD"
   }
