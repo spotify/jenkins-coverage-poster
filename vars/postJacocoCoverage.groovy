@@ -10,6 +10,6 @@ def call(Map args) {
   final Double coverage = lib.getCoverageFromJacoco(xmlPath)
   lib.postCoverage(coverage, coverageThreshold)
 
-  final Double coverageDelta = 0.0
+  final Double coverageDelta = lib.getCoverageDelta()
   lib.postCoverageDelta(coverageDelta, coverageDeltaThreshold)
 }
