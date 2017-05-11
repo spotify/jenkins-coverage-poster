@@ -63,11 +63,10 @@ def postCoverageDelta(Double coverageDelta, Double threshold) {
   postCommitStatus(state, context, description)
 }
 
-@NonCPS
 def Double getCoverageDelta() {
   masterCoverage = getCoverage(getCommitHash("origin/master"))
   branchCoverage = getCoverage(getCommitHash())
-  return new Double(branchCoverage - masterCoverage).round(2)
+  return (branchCoverage - masterCoverage as Double).round(2)
 }
 
 def Double getCoverage(String commitHash) {
@@ -140,4 +139,3 @@ def String getCommitHash(String branch=null) {
     ''').trim()
   }
 }
-
