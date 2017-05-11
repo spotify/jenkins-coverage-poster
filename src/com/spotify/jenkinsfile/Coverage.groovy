@@ -46,6 +46,11 @@ def postCoverage(Double coverage, Double threshold) {
 
 @NonCPS
 def postCoverageDelta(Double coverageDelta, Double threshold) {
+  if(threshold == null) {
+    echo "[WARNING] No delta threshold specified. Nothing will be posted"
+    return
+  }
+
   if(coverageDelta == null || coverageDelta == "") {
     echo "[WARNING] No coverage diff to post"
     return
