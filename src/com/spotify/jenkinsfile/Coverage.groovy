@@ -63,6 +63,7 @@ def postCoverageDelta(Double coverageDelta, Double threshold) {
   postCommitStatus(state, context, description)
 }
 
+@NonCPS
 def Double getCoverageDelta() {
   masterCoverage = getCoverage(getCommitHash("origin/master"))
   branchCoverage = getCoverage(getCommitHash())
