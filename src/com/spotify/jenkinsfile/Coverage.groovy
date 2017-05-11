@@ -64,10 +64,9 @@ def postCoverageDelta(Double coverageDelta, Double threshold) {
 }
 
 def Double getCoverageDelta() {
-  //for each hash, get the jenkins code coverage status
   masterCoverage = getCoverage(getCommitHash("origin/master"))
   branchCoverage = getCoverage(getCommitHash())
-  return branchCoverage - masterCoverage
+  return new Double(branchCoverage - masterCoverage).round(2)
 }
 
 def Double getCoverage(String commitHash) {
