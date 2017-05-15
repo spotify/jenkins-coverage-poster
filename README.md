@@ -39,13 +39,12 @@ stage("Post coverage") {
 This library uses total *instruction* coverage for all code coverage calculations. Note that this is different from line coverage and branch coverage.
 
 ## Requirements
-
-Your Jenkins must be version 2.0 or later and must define a Credential called `github-user-token`, which contains as password a valid GitHub api token. The Credential username can be anything, as it is not used. The token's permissions must allow read access to repositories and posting comments to pull requests at minimum.
-
-In addition, the machine/container running Jenkins should have:
- * bash 4+
+ * jenkins 2.0+
+ * bash 4.0+
  * python 2.6+
  * maven, sbt, or something else that can generate jacoco reports
+ 
+In addition, in Jenkins there must be a defined Credential called `github-user-token`, containing as password a valid GitHub api token. The Credential username can be anything, as it is not used. The token's permissions must allow read access to repositories and posting comments to pull requests at minimum.
 
 ## Code of conduct
 This project adheres to the [Open Code of Conduct][code-of-conduct]. By participating, you are expected to honor this code.
