@@ -64,12 +64,13 @@ def postCoverageDelta(Double coverageDelta, Double threshold) {
 }
 
 def Double getCoverageDelta() {
-  masterCoverage = getCoverage(getCommitHash("origin/master"))
-  branchCoverage = getCoverage(getCommitHash())
-  return (branchCoverage - masterCoverage as Double).round(2)
+  masterCoverage = getCoverage("refs/heads/master")
+  branchCoverage = getCoverage("HEAD")
+  delta = branchCoverage - masterCoverage
+  return ((delta * 100) as Integer) / 100.00  // fancy custom rounding since groovy's round() is rejected by scriptsecurity
 }
 
-def Double getCoverage(String commitHash) {
+def Double getCoverage(String ref) {
   withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'github-user-token',
                     usernameVariable: 'NOT_USED', passwordVariable: 'TOKEN']]) {
 
@@ -79,11 +80,17 @@ def Double getCoverage(String commitHash) {
       ORG_REPO_BRANCH_ARRAY=(\${JOB_NAME//// })
       ORG=\${ORG_REPO_BRANCH_ARRAY[0]}
       REPO=\${ORG_REPO_BRANCH_ARRAY[1]}
-      TOKEN_PARAM="access_token=\$TOKEN"
-      COMMIT_STATUS_URL=\$(echo "https://\${GITHUB_API_URL}/repos/\${ORG}/\${REPO}/commits/${commitHash}/status")
 
+      if [[ ${ref} == HEAD ]]; then
+        COMMIT_HASH=\$(git rev-parse HEAD)
+      else
+        COMMIT_HASH=\$(git ls-remote git@\${GITHUB_HOST}:\${ORG}/\${REPO}.git "${ref}" | cut -f1)
+      fi
+
+      COMMIT_STATUS_URL=\$(echo "https://\${GITHUB_API_URL}/repos/\${ORG}/\${REPO}/commits/\${COMMIT_HASH}/status")
+      TOKEN_PARAM="access_token=\$TOKEN"
       COMMIT_JSON=\$(curl "\${COMMIT_STATUS_URL}?\${TOKEN_PARAM}")
-      
+
       echo \$COMMIT_JSON | python -c 'import sys, json
 
 content = json.load(sys.stdin)
@@ -94,7 +101,7 @@ for status in content[\"statuses\"]:
       """)
 
     if(coverage == "") {
-      echo "[WARNING] No coverage found for commit ${commitHash}"
+      echo "[WARNING] No coverage found for ${ref}"
       return 0
     }
 
@@ -105,7 +112,6 @@ for status in content[\"statuses\"]:
 def postCommitStatus(String state, String context, String description) {
   withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'github-user-token',
                     usernameVariable: 'NOT_USED', passwordVariable: 'TOKEN']]) {
-    final commitHash = getCommitHash()
 
     // yay, escaping! https://gist.github.com/Faheetah/e11bd0315c34ed32e681616e41279ef4
     final script = """#!/bin/bash -xe
@@ -114,8 +120,9 @@ def postCommitStatus(String state, String context, String description) {
       ORG_REPO_BRANCH_ARRAY=(\${JOB_NAME//// })
       ORG=\${ORG_REPO_BRANCH_ARRAY[0]}
       REPO=\${ORG_REPO_BRANCH_ARRAY[1]}
+      COMMIT_HASH=\$(git rev-parse HEAD)
       TOKEN_PARAM="access_token=\${TOKEN}"
-      COMMIT_STATUS_URL=\$(echo "https://\${GITHUB_API_URL}/repos/\${ORG}/\${REPO}/statuses/${commitHash}")
+      COMMIT_STATUS_URL=\$(echo "https://\${GITHUB_API_URL}/repos/\${ORG}/\${REPO}/statuses/\${COMMIT_HASH}")
 
       curl -isSL -X POST "\${COMMIT_STATUS_URL}?\${TOKEN_PARAM}" -d '{
         \"state\": \"${state}\",
@@ -125,17 +132,5 @@ def postCommitStatus(String state, String context, String description) {
       }'
     """
     sh script
-  }
-}
-
-def String getCommitHash(String branch=null) {
-  if(branch == null || branch == "") {
-    branch = "HEAD"
-  }
-
-  withEnv(["BRANCH=${branch}"]) {
-    return sh(returnStdout: true, script: '''#!/bin/bash -xe
-      git rev-parse "$BRANCH"
-    ''').trim()
   }
 }
